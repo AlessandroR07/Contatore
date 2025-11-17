@@ -1,15 +1,43 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+    public static void main(String[] args) throws InterruptedException {
+        int threads = 4;
+        int incrementsPerThread = 5000;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        System.out.println("Numero thread: " + threads + ", incrementi per thread: " + incrementsPerThread);
+        System.out.println("---------------------------------------------------");
+
+
+        System.out.println("Test senza synchronized:");
+        Counter.reset();
+        runTest(threads, incrementsPerThread, false);
+
+        System.out.println();
+
+
+        System.out.println("Test con synchronized:");
+        Counter.reset();
+        runTest(threads, incrementsPerThread, true);
+    }
+
+    private static void runTest(int threads, int incrementsPerThread, boolean useSync) throws InterruptedException {
+        Thread[] ts = new Thread[threads];
+
+        for (int i = 0; i < threads; i++) {
+            ts[i] = new Thread(new Counter(useSync, incrementsPerThread), "Worker-" + i);
         }
+
+        long start = System.currentTimeMillis();
+
+        for (Thread t : ts) t.start();
+        for (Thread t : ts) t.join();
+
+        long end = System.currentTimeMillis();
+
+        int expected = threads * incrementsPerThread;
+        int actual = Counter.getCount();
+
+        System.out.println("Expected (threads * increments): " + expected);
+        System.out.println("Actual count: " + actual);
+        System.out.println("Tempo (ms): " + (end - start));
     }
 }
